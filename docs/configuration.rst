@@ -1,10 +1,14 @@
 .. _configuration:
 
 ============================
- Configuration and defaults
+ 構成とデフォルト
 ============================
 
+このドキュメントは、利用可能なオプションを説明しています。
+
 This document describes the configuration options available.
+
+デフォルトのローダを使用している場合は、Pythonパスが通った場所にに:file:`celeryconfig.py`モジュールを作成してください。
 
 If you're using the default loader, you must create the :file:`celeryconfig.py`
 module and make sure it is available on the Python path.
@@ -15,32 +19,38 @@ module and make sure it is available on the Python path.
 
 .. _conf-example:
 
-Example configuration file
+設定ファイル例
 ==========================
+
+これはあなたが始めるための設定ファイルの例です。
+あなたが基本的なCeleryのセットアップを実行するのに必要なものが、すべて含まれている必要があります。
 
 This is an example configuration file to get you started.
 It should contain all you need to run a basic Celery set-up.
 
 .. code-block:: python
-
+    
+    ## ブローカーの設定
     ## Broker settings.
     BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
+    # Celery実行時にインポートするモジュールのリスト
     # List of modules to import when celery starts.
     CELERY_IMPORTS = ('myapp.tasks', )
 
+    ## タスクの状態や結果を保存するためにデータベースを使用する
     ## Using the database to store task state and results.
     CELERY_RESULT_BACKEND = 'db+sqlite:///results.db'
 
     CELERY_ANNOTATIONS = {'tasks.add': {'rate_limit': '10/s'}}
 
 
-Configuration Directives
+設定ディレクティブ
 ========================
 
 .. _conf-datetime:
 
-Time and date settings
+日時の設定
 ----------------------
 
 .. setting:: CELERY_ENABLE_UTC
@@ -48,14 +58,18 @@ Time and date settings
 CELERY_ENABLE_UTC
 ~~~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.5
+.. 追加バージョン:: 2.5
+
+メッセージの日時でUTCタイムゾーンの使用を有効にする。
 
 If enabled dates and times in messages will be converted to use
 the UTC timezone.
 
-Note that workers running Celery versions below 2.5 will assume a local
-timezone for all messages, so only enable if all workers have been
-upgraded.
+ノート。Celeryのバージョン2.5未満で実行されているワーカーは、すべてのメッセージがローカル・タイムゾーンとして扱われます。すべてのワーカーをアップグレードしてから有効にします。
+
+Note that workers running Celery versions below 2.5 will assume a local timezone for all messages, so only enable if all workers have been upgraded.
+
+バージョン3.0からは、デフォルトで有効になりました。
 
 Enabled by default since version 3.0.
 
@@ -64,13 +78,17 @@ Enabled by default since version 3.0.
 CELERY_TIMEZONE
 ~~~~~~~~~~~~~~~
 
+カスタム・タイムゾーンを使用するようにCeleryを設定します。
+タイムゾーンは、`pytz`_ライブラリでサポートされているいずれかの値です。
+
 Configure Celery to use a custom time zone.
 The timezone value can be any time zone supported by the `pytz`_
 library.
 
+設定していない場合は、UTCタイムゾーンが使用される。後方互換性のため:setting:`CELERY_ENABLE_UTC`設定は、Falseに設定され、代わりにシステム・ロケールのタイムゾーンが使用されます。
+
 If not set the UTC timezone is used.  For backwards compatibility
-there is also a :setting:`CELERY_ENABLE_UTC` setting, and this is set
-to false the system local timezone is used instead.
+there is also a :setting:`CELERY_ENABLE_UTC` setting, and this is set to false the system local timezone is used instead.
 
 .. _`pytz`: http://pypi.python.org/pypi/pytz/
 
@@ -78,7 +96,7 @@ to false the system local timezone is used instead.
 
 .. _conf-tasks:
 
-Task settings
+タスクの設定
 -------------
 
 .. setting:: CELERY_ANNOTATIONS
@@ -86,11 +104,14 @@ Task settings
 CELERY_ANNOTATIONS
 ~~~~~~~~~~~~~~~~~~
 
+この設定は、構成からタスク属性を上書きする事ができます。設定は、タスクのフィルタと変更する属性のマップを返却する辞書オブジェクト、またはアノテーションのリスト・オブジェクトでおこないます。
+
 This setting can be used to rewrite any task attribute from the
 configuration.  The setting can be a dict, or a list of annotation
 objects that filter for tasks and return a map of attributes
 to change.
 
+これは、``tasks.add``タスクに、``rate_limit``の属性を変更します。:
 
 This will change the ``rate_limit`` attribute for the ``tasks.add``
 task:
@@ -99,12 +120,15 @@ task:
 
     CELERY_ANNOTATIONS = {'tasks.add': {'rate_limit': '10/s'}}
 
+または、すべてのタスクを同様に変更します。:
+
 or change the same for all tasks:
 
 .. code-block:: python
 
     CELERY_ANNOTATIONS = {'*': {'rate_limit': '10/s'}}
 
+メソッドをも同様にできます。例えば、``on_failure``ハンドラ:
 
 You can change methods too, for example the ``on_failure`` handler:
 
@@ -116,8 +140,9 @@ You can change methods too, for example the ``on_failure`` handler:
     CELERY_ANNOTATIONS = {'*': {'on_failure': my_on_failure}}
 
 
-If you need more flexibility then you can use objects
-instead of a dict to choose which tasks to annotate:
+さらに柔軟性が必要な場合は、どのタスクにアノテーションをつかるかを選ぶ辞書の代わりに、オブジェクトを使うことができます。
+
+If you need more flexibility then you can use objects instead of a dict to choose which tasks to annotate:
 
 .. code-block:: python
 
@@ -133,7 +158,7 @@ instead of a dict to choose which tasks to annotate:
 
 .. _conf-concurrency:
 
-Concurrency settings
+同時実行の設定
 --------------------
 
 .. setting:: CELERYD_CONCURRENCY
@@ -141,13 +166,15 @@ Concurrency settings
 CELERYD_CONCURRENCY
 ~~~~~~~~~~~~~~~~~~~
 
-The number of concurrent worker processes/threads/green threads executing
-tasks.
+タスクを実行するスレッドの同時実行ワーカーのプロセス、スレッド、グリーンの数です。
 
-If you're doing mostly I/O you can have more processes,
-but if mostly CPU-bound, try to keep it close to the
-number of CPUs on your machine. If not set, the number of CPUs/cores
-on the host will be used.
+The number of concurrent worker processes/threads/green threads executing tasks.
+
+主がI/Oの場合は、より多くのプロセスを使うことができます。しかし主がCPUバウンドの場合は、マシンのCPUの数に近づけて置かなければなりません。設定されていない場合は、ホスト上のCPU/コアの数が使用されます。
+
+If you're doing mostly I/O you can have more processes, but if mostly CPU-bound, try to keep it close to the number of CPUs on your machine. If not set, the number of CPUs/cores on the host will be used.
+
+利用可能なCPUの数がデフォルトです。
 
 Defaults to the number of available CPUs.
 
@@ -156,17 +183,17 @@ Defaults to the number of available CPUs.
 CELERYD_PREFETCH_MULTIPLIER
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+同時実行数を単位時間当たりに、どれだけのメッセージを同時にプリフェッチする。デフォルトでは、4(各プロセスに4ずつ)。デフォルト設定は、大抵は良い選択となります。しかし、もしとても長い実行中のタスクをキューで待っており、ワーカーを開始しなければならない場合は、最初に起動するワーカーが、初めにメッセージ数の4倍を受け取ることに注意してください。したがってタスクはワーカーへ公平に配布されることはないでしょう。
+
 How many messages to prefetch at a time multiplied by the number of
 concurrent processes.  The default is 4 (four messages for each
-process).  The default setting is usually a good choice, however -- if you
-have very long running tasks waiting in the queue and you have to start the
-workers, note that the first worker to start will receive four times the
-number of messages initially.  Thus the tasks may not be fairly distributed
-to the workers.
+process).  The default setting is usually a good choice, however -- if you have very long running tasks waiting in the queue and you have to start the workers, note that the first worker to start will receive four times the number of messages initially.  Thus the tasks may not be fairly distributed to the workers.
 
-To disable prefetching, set CELERYD_PREFETCH_MULTIPLIER to 1.  Setting 
-CELERYD_PREFETCH_MULTIPLIER to 0 will allow the worker to keep consuming
-as many messages as it wants.
+プレフェッチを無効にした場合、CELERYD_PREFETCH_MULTIPLIERを1にする。
+CELERYD_PREFETCH_MULTIPLIERを0にすると、ワーカーは望んでいるメッセージ以上を消費し続けるでしょう。
+To disable prefetching, set CELERYD_PREFETCH_MULTIPLIER to 1.  Setting CELERYD_PREFETCH_MULTIPLIER to 0 will allow the worker to keep consuming as many messages as it wants.
+
+プレフェッチについてさらに知りたい場合は、:ref:`optimizing-prefetch-limit`を読んでください。
 
 For more on prefetching, read :ref:`optimizing-prefetch-limit`
 
@@ -176,59 +203,93 @@ For more on prefetching, read :ref:`optimizing-prefetch-limit`
 
 .. _conf-result-backend:
 
-Task result backend settings
+タスク結果のバックエンド設定
 ----------------------------
 
 .. setting:: CELERY_RESULT_BACKEND
 
 CELERY_RESULT_BACKEND
 ~~~~~~~~~~~~~~~~~~~~~
+:非推奨のエイリアス: ``CELERY_BACKEND``
+
 :Deprecated aliases: ``CELERY_BACKEND``
+
+タスク結果を格納するためにバックエンドは使用される(削除標識)。
+デフォルトでは無効になっています。
+次のいずれかを指定できます。
 
 The backend used to store task results (tombstones).
 Disabled by default.
 Can be one of the following:
 
-* database
+* データベース
+    `SQLAlchemy`_でサポートされているデータベースを使用してください。
+    参照 ::ref:`conf-database-result-backend`.
+    
     Use a relational database supported by `SQLAlchemy`_.
     See :ref:`conf-database-result-backend`.
 
-* cache
+* キャッシュ
+    結果の保存に `memcached`_ を使用します。
+    参照 :ref:`conf-cache-result-backend`
     Use `memcached`_ to store the results.
     See :ref:`conf-cache-result-backend`.
 
 * mongodb
+    結果の保存に `MongoDB `_ を使用します。
+    参照 :ref:`conf-mongodb-result-backend`
+    
     Use `MongoDB`_ to store the results.
     See :ref:`conf-mongodb-result-backend`.
 
 * redis
+    結果の保存に `Redis `_ を使用します。
+    参照 :ref:`conf-redis-result-backend`
+    
     Use `Redis`_ to store the results.
     See :ref:`conf-redis-result-backend`.
 
 * amqp
+    結果の送信にAMQPメッセージを使用します。
+    参照 :ref:`conf-amqp-result-backend`
+
     Send results back as AMQP messages
     See :ref:`conf-amqp-result-backend`.
 
 * cassandra
+    結果の保存に `Cassandra`_ を使用します。
+    参照 :ref:`conf-cassandra-result-backend`
+
     Use `Cassandra`_ to store the results.
     See :ref:`conf-cassandra-result-backend`.
 
 * ironcache
+    結果の保存に `IronCache `_ を使用します。
+    参照 :ref:`conf-ironcache-result-backend`
+    
     Use `IronCache`_ to store the results.
     See :ref:`conf-ironcache-result-backend`.
 
 * couchbase
+    結果の保存に `Couchbase `_ を使用します。
+    参照 :ref:`conf-couchbase-result-backend`
+    
     Use `Couchbase`_ to store the results.
     See :ref:`conf-couchbase-result-backend`.
 
 * couchdb
+    結果の保存に `CouchDB `_ を使用します。
+    参照 :ref:`conf-couchdb-result-backend`
+    
     Use `CouchDB`_ to store the results.
     See :ref:`conf-couchdb-result-backend`.
 
-.. warning:
+.. 警告:
 
-    While the AMQP result backend is very efficient, you must make sure
-    you only receive the same result once.  See :doc:`userguide/calling`).
+    AMQP結果のバックエンドはとても効率的ですが、同一のメッセージを1回のみ受信していることを確認する必要があります。
+    参照 :doc:`userguide/calling`)
+
+    While the AMQP result backend is very efficient, you must make sure you only receive the same result once.  See :doc:`userguide/calling`).
 
 .. _`SQLAlchemy`: http://sqlalchemy.org
 .. _`memcached`: http://memcached.org
@@ -245,17 +306,22 @@ Can be one of the following:
 CELERY_RESULT_SERIALIZER
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+シリアル化形式の結果。デフォルトは、``pickle``です。サポートしているシリアルかフォーマット :ref:`calling-serializers` を参照。
+
 Result serialization format.  Default is ``pickle``. See
 :ref:`calling-serializers` for information about supported
 serialization formats.
 
 .. _conf-database-result-backend:
 
-Database backend settings
+データベース・バックエンドの設定
 -------------------------
 
-Database URL Examples
+データベースURLの例
 ~~~~~~~~~~~~~~~~~~~~~
+
+データベース・バックエンドを使用する際は、 :setting:`CELERY_RESULT_BACKEND` 設定に接続URLと、``db+``を構成する必要があります。
+プレフィックス:
 
 To use the database backend you have to configure the
 :setting:`CELERY_RESULT_BACKEND` setting with a connection URL and the ``db+``
@@ -264,6 +330,8 @@ prefix:
 .. code-block:: python
 
     CELERY_RESULT_BACKEND = 'db+scheme://user:password@host:port/dbname'
+
+例:
 
 Examples:
 
@@ -281,9 +349,9 @@ Examples:
 
 .. code-block:: python
 
-Please see `Supported Databases`_ for a table of supported databases,
-and `Connection String`_ for more information about connection
-strings (which is the part of the URI that comes after the ``db+`` prefix).
+`Supported Databases`_ 表のサポートしているデータベースを参照し、 `Connection String`_ では接続文字列(``db+``接頭辞の後に続くURIの一部)を参照してください。
+
+Please see `Supported Databases`_ for a table of supported databases, and `Connection String`_ for more information about connection strings (which is the part of the URI that comes after the ``db+`` prefix).
 
 .. _`Supported Databases`:
     http://www.sqlalchemy.org/docs/core/engines.html#supported-databases
@@ -296,6 +364,8 @@ strings (which is the part of the URI that comes after the ``db+`` prefix).
 CELERY_RESULT_DBURI
 ~~~~~~~~~~~~~~~~~~~
 
+:setting:`CELERY_RESULT_BACKEND` 設定で、データベースURLが直接設定できるようになったため、使用されなくなりました。
+
 This setting is no longer used as it's now possible to specify
 the database URL directly in the :setting:`CELERY_RESULT_BACKEND` setting.
 
@@ -304,25 +374,25 @@ the database URL directly in the :setting:`CELERY_RESULT_BACKEND` setting.
 CELERY_RESULT_ENGINE_OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To specify additional SQLAlchemy database engine options you can use
-the :setting:`CELERY_RESULT_ENGINE_OPTIONS` setting::
+追加でSQLAlchemyのデータベース・エンジンのオプションを指定するには、:setting:`CELERY_RESULT_ENGINE_OPTIONS` 設定を使用することができます。
+
+To specify additional SQLAlchemy database engine options you can use the :setting:`CELERY_RESULT_ENGINE_OPTIONS` setting::
 
     # echo enables verbose logging from SQLAlchemy.
     CELERY_RESULT_ENGINE_OPTIONS = {'echo': True}
 
 .. setting:: CELERY_RESULT_DB_SHORT_LIVED_SESSIONS
 
-Short lived sessions
+短命のセッション
 ~~~~~~~~~~~~~~~~~~~~
 
     CELERY_RESULT_DB_SHORT_LIVED_SESSIONS = True
 
-Short lived sessions are disabled by default.  If enabled they can drastically reduce
-performance, especially on systems processing lots of tasks.  This option is useful
-on low-traffic workers that experience errors as a result of cached database connections
-going stale through inactivity.  For example, intermittent errors like
-`(OperationalError) (2006, 'MySQL server has gone away')` can be fixed by enabling
-short lived sessions.  This option only affects the database backend.
+短命のセッションは、デフォルトで無効になっています。有効にした場合は、多大なタスクで特にシステム・プロセッシングで大幅に性能を低下させます。このオプションは、
+低いトラフィックのワーカーで、非アクティブにより古くなったデータベース接続でキャッシュがなくなった場合のような実行エラーで便利です。　例えば、断続的な `(OperationalError) (2006, 'MySQL server has gone away')` のようなエラーを短命のセッションを有効にすることで改善できる。このオプションはデータベース・バックエンドのみに影響を与えます。
+
+Short lived sessions are disabled by default.  If enabled they can drastically reduce performance, especially on systems processing lots of tasks.  This option is useful on low-traffic workers that experience errors as a result of cached database connections going stale through inactivity.  For example, intermittent errors like
+`(OperationalError) (2006, 'MySQL server has gone away')` can be fixed by enabling short lived sessions.  This option only affects the database backend.
 
 Specifying Table Names
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -343,14 +413,14 @@ you to customize the table names:
 
 .. _conf-amqp-result-backend:
 
-AMQP backend settings
+AMQPバックエンドの設定
 ---------------------
 
 .. note::
 
-    The AMQP backend requires RabbitMQ 1.1.0 or higher to automatically
-    expire results.  If you are running an older version of RabbitMQ
-    you should disable result expiration like this:
+    AMQPバックエンドは、RabbitMQ 1.1.0以上で、自動で結果を期限切れにする事が必要です。実行しているRabbitMQのバージョンが古い場合は、結果の有効期限を下記のように無効にしてください。:
+    
+    The AMQP backend requires RabbitMQ 1.1.0 or higher to automatically expire results.  If you are running an older version of RabbitMQ you should disable result expiration like this:
 
         CELERY_TASK_RESULT_EXPIRES = None
 
@@ -359,12 +429,16 @@ AMQP backend settings
 CELERY_RESULT_EXCHANGE
 ~~~~~~~~~~~~~~~~~~~~~~
 
+結果を掲載するための名称。デフォルトでは、`celeryresults`です。
+
 Name of the exchange to publish results in.  Default is `celeryresults`.
 
 .. setting:: CELERY_RESULT_EXCHANGE_TYPE
 
 CELERY_RESULT_EXCHANGE_TYPE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+結果を交換するためのタイプ。デフォルトでは、`direct`交換が使用されます。
 
 The exchange type of the result exchange.  Default is to use a `direct`
 exchange.
@@ -374,11 +448,11 @@ exchange.
 CELERY_RESULT_PERSISTENT
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-If set to :const:`True`, result messages will be persistent.  This means the
-messages will not be lost after a broker restart.  The default is for the
-results to be transient.
+:const:`True`とした場合、結果メッセージは永続的になります。これは、ブローカーの再起動後にメッセージが失われないことを意味します。デフォルトで、結果は一過性です。
 
-Example configuration
+If set to :const:`True`, result messages will be persistent.  This means the messages will not be lost after a broker restart.  The default is for the results to be transient.
+
+構成例
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -388,19 +462,24 @@ Example configuration
 
 .. _conf-cache-result-backend:
 
-Cache backend settings
+キャッシュ・バックエンドの設定
 ----------------------
 
 .. note::
 
-    The cache backend supports the `pylibmc`_ and `python-memcached`
-    libraries.  The latter is used only if `pylibmc`_ is not installed.
+    キャッシュ・バックエンドは、 `pylibmc`_ 、`python-memcached` ライブラリをサポートしています。`pylibmc`_ がインストールされていない場合のみ後者が使用されます。
+
+    The cache backend supports the `pylibmc`_ and `python-memcached` libraries.  The latter is used only if `pylibmc`_ is not installed.
+
+単独のmemcachedサーバ使用:
 
 Using a single memcached server:
 
 .. code-block:: python
 
     CELERY_RESULT_BACKEND = 'cache+memcached://127.0.0.1:11211/'
+
+複数のmemcachedサーバ使用:
 
 Using multiple memcached servers:
 
@@ -412,12 +491,16 @@ Using multiple memcached servers:
 
 .. setting:: CELERY_CACHE_BACKEND_OPTIONS
 
+「メモリ」バックエンドは、メモリのみにキャッシュを保存しています。
+
 The "memory" backend stores the cache in memory only:
 
     CELERY_CACHE_BACKEND = 'memory'
 
 CELERY_CACHE_BACKEND_OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:setting:`CELERY_CACHE_BACKEND_OPTIONS` 設定を使用することで、pylibmcオプションを設定できます。
 
 You can set pylibmc options using the :setting:`CELERY_CACHE_BACKEND_OPTIONS`
 setting:
@@ -434,21 +517,28 @@ setting:
 CELERY_CACHE_BACKEND
 ~~~~~~~~~~~~~~~~~~~~
 
+:setting:`CELERY_RESULT_BACKEND` 設定でキャッシュのバックエンドを直接設定できるため、使用されなくなりました。
+
 This setting is no longer used as it's now possible to specify
 the cache backend directly in the :setting:`CELERY_RESULT_BACKEND` setting.
 
 .. _conf-redis-result-backend:
 
-Redis backend settings
+Redisバックエンドの設定
 ----------------------
 
-Configuring the backend URL
+バックエンドURLの構成
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
 
+    Redisバックエンドは :mod:`redis` ライブラリが必要です。:
+    http://pypi.python.org/pypi/redis/
+    
     The Redis backend requires the :mod:`redis` library:
     http://pypi.python.org/pypi/redis/
+
+    redisパッケージを`pip` または `easy_install` でインストールできます。:
 
     To install the redis package use `pip` or `easy_install`:
 
