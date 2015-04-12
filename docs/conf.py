@@ -10,7 +10,7 @@ this = os.path.dirname(os.path.abspath(__file__))
 # absolute, like shown here.
 sys.path.insert(0, os.path.join(this, os.pardir))
 sys.path.append(os.path.join(this, '_ext'))
-import celery
+#import celery
 
 # General configuration
 # ---------------------
@@ -27,7 +27,7 @@ extensions = ['sphinx.ext.autodoc',
 
 
 LINKCODE_URL = 'http://github.com/{proj}/tree/{branch}/{filename}.py'
-GITHUB_PROJECT = 'celery/celery'
+GITHUB_PROJECT = 'windschord/celery-doc-ja'
 GITHUB_BRANCH = 'master'
 
 
@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Celery'
+project = 'celery-doc-ja'
 copyright = '2009-2015, Ask Solem & Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -61,7 +61,7 @@ copyright = '2009-2015, Ask Solem & Contributors'
 # built documents.
 #
 # The short X.Y version.
-version = '.'.join(map(str, celery.VERSION[0:2]))
+#version = '.'.join(map(str, celery.VERSION[0:2]))
 # The full version, including alpha/beta/rc tags.
 release = celery.__version__
 
@@ -113,19 +113,19 @@ html_sidebars = {
 
 # ## Issuetracker
 
-github_project = 'celery/celery'
+github_project = 'windschord/celery-doc-ja'
 
 # -- Options for Epub output -------------------------------------------
 
 # Bibliographic Dublin Core info.
 epub_title = 'Celery Manual, Version {0}'.format(version)
-epub_author = 'Ask Solem'
-epub_publisher = 'Celery Project'
-epub_copyright = '2009-2014'
+epub_author = 'Ask Solem (Japanese: windschord'
+epub_publisher = 'Celery Project (Japanese)'
+epub_copyright = '2009-2015'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
-epub_language = 'en'
+epub_language = 'ja'
 
 # The scheme of the identifier. Typical schemes are ISBN or URL.
 epub_scheme = 'ISBN'
