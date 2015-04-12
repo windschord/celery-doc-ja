@@ -497,3 +497,9 @@ This software is licensed under the `New BSD License`. See the ``LICENSE``file i
    :target: https://travis-ci.org/celery/celery
 .. |coverage-status| image:: https://coveralls.io/repos/celery/celery/badge.svg
    :target: https://coveralls.io/r/celery/celery
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/windschord/celery-doc-ja/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
