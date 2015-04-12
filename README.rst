@@ -489,7 +489,7 @@ This software is licensed under the `New BSD License`. See the ``LICENSE``file i
 .. # vim: syntax=rst expandtab tabstop=4 shiftwidth=4 shiftround
 
 
-.. image:: https://d2weczhvl823v0.cloudfront.net/celery/celery/trend.png
+.. image:: https://d2weczhvl823v0.cloudfront.net/windschord/celery-doc-ja/trend.png
     :alt: Bitdeli badge
     :target: https://bitdeli.com/free
 
