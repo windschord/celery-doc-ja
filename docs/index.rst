@@ -14,7 +14,7 @@ Celeryはユーザや開発者の大規模で多様なコミュニティーを�
 
 Celery has a large and diverse community of users and contributors, you should come join us :ref:`on IRC <irc-channel>` or :ref:`our mailing-list <mailing-list>`.
 
-Celeryは`BSD License`_で提供されるオープンソースです。
+Celeryは `BSD License`_ で提供されるオープンソースです。
 
 Celery is Open Source and licensed under the `BSD License`_.
 
@@ -25,7 +25,7 @@ Celery is Open Source and licensed under the `BSD License`_.
 
 - If you are new to Celery you can get started by following the :ref:`first-steps` tutorial.
 
-- `FAQ <faq>` を見ることができます。
+- :ref:`FAQ <faq>` を見ることができます。
 
 - You can also check out the :ref:`FAQ <faq>`.
 

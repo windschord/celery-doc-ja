@@ -2,32 +2,35 @@
 .. _first-steps:
 
 =========================
- First Steps with Celery
+Celeryのファースト･ステップ
 =========================
 
+Celeryはバッテリーを含んだタスクキューです。
+Celeryが解決する複雑なすべての問題を学ぶことなく、使い始めることができます。あなたの製品が拡大し、他の言語と統合できるように、周囲のベスト・プラティクスを設計されています。あなたが生産に必要なツールやサポートが付属します。
+
 Celery is a task queue with batteries included.
-It is easy to use so that you can get started without learning
-the full complexities of the problem it solves. It is designed
-around best practices so that your product can scale
-and integrate with other languages, and it comes with the
-tools and support you need to run such a system in production.
+It is easy to use so that you can get started without learning the full complexities of the problem it solves. It is designed around best practices so that your product can scale and integrate with other languages, and it comes with the tools and support you need to run such a system in production.
+
+このチュートリアルでは、Celeryを使うための基本的なことを学びます。
+学習内容;
 
 In this tutorial you will learn the absolute basics of using Celery.
 You will learn about;
 
+- メッセージ転送(ブローカー)の選択とインストール
+- Celeryのインストールと最初のタスクの作成
+- ワーカーの起動とタスクの呼び出し
+- タスクが別の状態に遷移する軌跡や返値の取得
+
 - Choosing and installing a message transport (broker).
 - Installing Celery and creating your first task.
 - Starting the worker and calling tasks.
-- Keeping track of tasks as they transition through different states,
-  and inspecting return values.
+- Keeping track of tasks as they transition through different states, and inspecting return values.
 
-Celery may seem daunting at first - but don't worry - this tutorial
-will get you started in no time. It is deliberately kept simple, so
-to not confuse you with advanced features.
-After you have finished this tutorial
-it's a good idea to browse the rest of the documentation,
-for example the :ref:`next-steps` tutorial, which will
-showcase Celery's capabilities.
+
+
+Celery may seem daunting at first - but don't worry - this tutorial will get you started in no time. It is deliberately kept simple, so to not confuse you with advanced features.
+After you have finished this tutorial it's a good idea to browse the rest of the documentation, for example the :ref:`next-steps` tutorial, which will showcase Celery's capabilities.
 
 .. contents::
     :local:
